@@ -4,7 +4,7 @@ const useStore = create((set, get) => ({
   // Auth
   user: null,
   isAuthenticated: false,
-  userRole: null, // 'customer' | 'chef' | 'delivery'
+  userRole: null, // 'customer' | 'chef' | 'deliveryPartner'
 
   setUser: (user, role) => set({ user, isAuthenticated: true, userRole: role }),
   logout: () => set({ user: null, isAuthenticated: false, userRole: null, cart: null }),

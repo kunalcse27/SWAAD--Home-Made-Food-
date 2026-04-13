@@ -31,9 +31,7 @@ export default function CheckoutPage() {
         chefId: chef.id || chef._id,
         planType: plan,
         deliveryOption: delivery,
-        isVegOnly: cart.isVegOnly || false,
-        totalPrice: total + Math.round(planPrice * 0.05),
-        deliveryFee
+        isVegOnly: cart.isVegOnly || false
       };
       await subscriptionsAPI.create(subscriptionData);
 

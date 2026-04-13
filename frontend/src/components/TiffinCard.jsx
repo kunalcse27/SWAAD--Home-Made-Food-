@@ -91,8 +91,8 @@ export default function TiffinCard({ chef, className = '' }) {
         {/* Price + CTA */}
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-lg font-bold text-ink">₹{chef.price.toLocaleString()}</span>
-            <span className="text-xs text-ink-muted">/month</span>
+            <span className="text-lg font-bold text-ink">₹{chef.price?.toLocaleString() || 0}</span>
+            <span className="text-xs text-ink-muted">/meal</span>
           </div>
           <Link
             to={`/tiffin/${chef.id}`}

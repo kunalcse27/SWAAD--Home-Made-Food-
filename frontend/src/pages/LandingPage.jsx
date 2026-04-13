@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MapPin, ArrowRight, Star } from 'lucide-react';
+import { chefsAPI } from '../services/api';
 
-function HeroSection() {
+function HeroSection({ featuredChef }) {
   const [locationInput, setLocationInput] = useState('');
   const navigate = useNavigate();
 
@@ -24,11 +25,12 @@ function HeroSection() {
             <span className="text-[#AD4924] italic font-serif tracking-normal">ab har jagah</span>
           </h1>
 
-          <p className="text-[#5A5A5A] text-lg mb-10 leading-relaxed max-w-md">
+          <p className="text-[#5A5A5A] text-lg mb-8 leading-relaxed max-w-md">
             Experience the warmth of home-cooked rituals. Curated tiffins from master home chefs, delivered with editorial precision to your doorstep.
           </p>
 
-          <div className="bg-[#EFECE6] p-2 rounded-full flex items-center justify-between max-w-md shadow-sm border border-[#E5E0D8]">
+          {/* Location search */}
+          <div className="bg-[#EFECE6] p-2 rounded-full flex items-center justify-between max-w-md shadow-sm border border-[#E5E0D8] mb-6">
             <div className="flex items-center gap-3 px-4 flex-1">
               <MapPin size={18} className="text-[#AD4924]" />
               <input
@@ -40,37 +42,67 @@ function HeroSection() {
               />
             </div>
             <button
-              onClick={() => navigate('/home')}
+              onClick={() => navigate('/login')}
               className="bg-[#C87E4B] hover:bg-[#AD4924] text-white px-6 py-3 rounded-full text-sm font-semibold transition-colors whitespace-nowrap">
               Find Food
             </button>
           </div>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to="/login"
+              className="bg-[#AD4924] hover:bg-[#8F361A] text-white px-7 py-3.5 rounded-full text-sm font-bold transition-colors shadow-md"
+            >
+              Order Now
+            </Link>
+            <Link
+              to="/chef-signup"
+              className="bg-white hover:bg-[#F0EFEC] text-[#2D2D2D] border border-[#E5E0D8] px-7 py-3.5 rounded-full text-sm font-bold transition-colors"
+            >
+              Become a Chef
+            </Link>
+          </div>
         </div>
 
-        {/* Right Image Composition */}
+
+        {/* Right Image/Video Composition */}
         <div className="relative h-[400px] md:h-[600px] flex items-center justify-center">
           <div className="absolute inset-0 bg-gradient-to-tr from-[#EDEDE4] to-[#F5F2ED] rounded-[3rem] shadow-xl transform rotate-3" />
-          <img
-            src="/tiffin.png"
-            alt="Premium Brass Tiffin"
-            className="relative z-10 w-full h-full object-cover rounded-[3rem] shadow-2xl"
-          />
+          
+          <div className="relative z-10 w-full h-full rounded-[3rem] shadow-2xl overflow-hidden group">
+            {/* Ultra HD Cinematic Cooking Video Loop (Open CDN) */}
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover transform scale-105 group-hover:scale-110 transition-transform duration-[2s] ease-out mix-blend-multiply"
+            >
+              <source src="https://upload.wikimedia.org/wikipedia/commons/7/74/Preparation_of_Dosa.webm" type="video/webm" />
+            </video>
+            
+            {/* Elegant vignette overlay to pop text and add premium cinematic feel */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
+          </div>
           
           {/* Floating Chef Card */}
-          <div className="absolute -left-8 md:-left-16 bottom-16 z-20 bg-white p-5 rounded-3xl shadow-2xl max-w-[280px] animate-bounce-soft">
-            <div className="flex items-center gap-3 mb-2">
-              <img src="https://i.pravatar.cc/150?img=47" alt="Chef Amrita" className="w-10 h-10 rounded-full" />
-              <div>
-                <p className="text-[#2D2D2D] text-xs font-bold">Chef Amrita's Kitchen</p>
-                <div className="flex gap-0.5 text-[#FFD166]">
-                  <Star size={10} fill="currentColor" /><Star size={10} fill="currentColor" /><Star size={10} fill="currentColor" /><Star size={10} fill="currentColor" /><Star size={10} fill="currentColor" />
+          {featuredChef && (
+            <div className="absolute -left-8 md:-left-16 bottom-16 z-20 bg-white p-5 rounded-3xl shadow-2xl max-w-[280px] animate-bounce-soft">
+              <div className="flex items-center gap-3 mb-2">
+                <img src={featuredChef.avatar || 'https://i.pravatar.cc/150?img=47'} alt={featuredChef.name} className="w-10 h-10 rounded-full" />
+                <div>
+                  <p className="text-[#2D2D2D] text-xs font-bold">{featuredChef.kitchenName || featuredChef.name}</p>
+                  <div className="flex gap-0.5 text-[#FFD166]">
+                    <Star size={10} fill="currentColor" /><Star size={10} fill="currentColor" /><Star size={10} fill="currentColor" /><Star size={10} fill="currentColor" /><Star size={10} fill="currentColor" />
+                  </div>
                 </div>
               </div>
+              <p className="text-[#5A5A5A] text-xs font-serif italic truncate-2-lines">
+                "{featuredChef.bio || 'Grandmother\'s secret masalas, shared with you.'}"
+              </p>
             </div>
-            <p className="text-[#5A5A5A] text-xs font-serif italic">
-              "My grandmother's secret masalas, now shared with you every afternoon."
-            </p>
-          </div>
+          )}
         </div>
       </div>
     </section>
@@ -186,59 +218,83 @@ function RitualSection() {
   );
 }
 
-function ArtistsSection() {
+function ArtistsSection({ chefs }) {
+  // Beautiful curated defaults to ensure the landing page always looks premium (Pure Veg)
+  const fallbackChefs = [
+    {
+      id: 'mock-1',
+      kitchenName: "Meera's Royal Thali",
+      specialty: 'Authentic Rajasthani & Gujarati Feasts',
+      image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=800&q=80' // Veg Thali
+    },
+    {
+      id: 'mock-2',
+      kitchenName: "The South Kitchen",
+      specialty: 'Crispy Dosas & Filter Coffee',
+      image: 'https://images.unsplash.com/photo-1589302168068-964664d93cb0?auto=format&fit=crop&w=800&q=80' // Dosa
+    },
+    {
+      id: 'mock-3',
+      kitchenName: "Amma's Rasoi",
+      specialty: 'Sattvic Meals & Crispy Samosas',
+      image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=800&q=80' // Samosa/Snacks
+    }
+  ];
+
+  // Use live data if available, otherwise use the beautiful fallbacks
+  const displayChefs = (chefs && chefs.length >= 3) ? chefs.slice(0, 3) : fallbackChefs;
+
   return (
-    <section className="bg-[#2B2A28] py-24">
-      <div className="max-w-7xl mx-auto px-6 md:px-12">
+    <section className="bg-[#2B2A28] py-20 relative overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+         <div className="absolute top-[-10%] right-[-5%] w-[40rem] h-[40rem] bg-rust/5 rounded-full blur-3xl mix-blend-screen" />
+         <div className="absolute bottom-[-10%] left-[-5%] w-[30rem] h-[30rem] bg-[#FFD166]/5 rounded-full blur-3xl mix-blend-screen" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
           <div>
             <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-3">
               Meet Our <span className="text-[#AD4924] font-serif italic">Artists</span>
             </h2>
-            <p className="text-[#999999] text-sm max-w-sm">
-              The heart of SWAAD. Dedicated homemakers bringing their heritage to your table.
+            <p className="text-[#999999] text-base max-w-md leading-relaxed">
+              The heart of SWAAD. Dedicated homemakers transforming fresh ingredients into nostalgic culinary masterpieces.
             </p>
           </div>
-          <Link to="/home" className="text-white text-sm font-semibold flex items-center gap-2 hover:text-[#AD4924] transition-colors">
-            View All Chefs <ArrowRight size={16} />
+          <Link to="/home" className="group text-white text-sm font-semibold flex items-center gap-3 px-6 py-3 rounded-full border border-white/20 hover:bg-white hover:text-black transition-all duration-300">
+            View All Chefs <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
-        {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[250px]">
-          {/* Main Large Image */}
-          <div className="lg:col-span-1 lg:row-span-2 rounded-3xl overflow-hidden relative group cursor-pointer shadow-lg hover:shadow-2xl transition-shadow duration-700">
-            <img src="/kavita.png" alt="Chef Kavita" className="w-full h-full object-cover group-hover:scale-110 group-hover:-rotate-1 transition-all duration-1000 ease-out" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8 transform group-hover:translate-y-[-10px] transition-transform duration-700">
-              <h3 className="text-white font-bold text-2xl mb-1">Chef Kavita, Delhi</h3>
-              <p className="text-white/80 text-sm opacity-90">Specialist in authentic Mughlai Dum Pukht traditions.</p>
-            </div>
-          </div>
-          
-          {/* Top Right Horizontal */}
-          <div className="lg:col-span-2 rounded-3xl overflow-hidden relative group cursor-pointer shadow-lg hover:shadow-2xl transition-shadow duration-700">
-            <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1000&auto=format&fit=crop" alt="Chef Rahul" className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-1000 ease-out" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8 transform group-hover:translate-y-[-8px] transition-transform duration-700">
-              <h3 className="text-white font-bold text-xl mb-1">Chef Rahul, Mumbai</h3>
-              <p className="text-white/80 text-sm opacity-90">Modern Maharashtrian flavors.</p>
-            </div>
-          </div>
-
-          {/* Bottom Right Small 1 */}
-          <div className="rounded-3xl overflow-hidden relative group cursor-pointer shadow-lg hover:shadow-2xl transition-shadow duration-700">
-            <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=600&auto=format&fit=crop" alt="Chef Priya" className="w-full h-full object-cover group-hover:scale-110 group-hover:-rotate-2 transition-all duration-1000 ease-out" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6 transform group-hover:translate-y-[-5px] transition-transform duration-700">
-              <h3 className="text-white font-bold text-lg">Chef Priya</h3>
-            </div>
-          </div>
-
-          {/* Bottom Right Small 2 */}
-          <div className="rounded-3xl overflow-hidden relative group cursor-pointer shadow-lg hover:shadow-2xl transition-shadow duration-700">
-            <img src="https://images.unsplash.com/photo-1633945274405-b6c8069047b0?q=80&w=600&auto=format&fit=crop" alt="Chef Anand" className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-2 transition-all duration-1000 ease-out" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6 transform group-hover:translate-y-[-5px] transition-transform duration-700">
-              <h3 className="text-white font-bold text-lg">Chef Anand</h3>
-            </div>
-          </div>
+        {/* Bento Grid (Optimized heights for better visual balance) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[250px] lg:auto-rows-[280px]">
+          {displayChefs.map((chef, i) => (
+            <Link key={chef.id} to={`/tiffin/${chef.id}`} 
+              className={`
+                ${i === 0 ? 'lg:col-span-1 lg:row-span-1' : i === 1 ? 'lg:col-span-2' : 'lg:col-span-3 lg:row-span-1'} 
+                rounded-[2rem] overflow-hidden relative group cursor-pointer shadow-indigo-500/10 shadow-xl
+              `}>
+              {/* Image Container with precise zooming */}
+              <div className="absolute inset-0 w-full h-full overflow-hidden">
+                 <img src={chef.image || fallbackChefs[i%3].image} 
+                   alt={chef.kitchenName} 
+                   className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-[1.5s] ease-out will-change-transform" />
+              </div>
+              
+              {/* Elegant Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent transition-opacity duration-700 opacity-80 group-hover:opacity-100" />
+              
+              {/* Text Content */}
+              <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-8 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 ease-out">
+                <div className="w-8 h-1 bg-[#D98A52] mb-3 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 delay-100" />
+                <h3 className="text-white font-bold text-2xl sm:text-3xl mb-1 font-display">{chef.kitchenName || chef.name}</h3>
+                <p className="text-white/80 text-sm font-serif italic max-w-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200">
+                  {chef.specialty || 'Authentic regional flavors prepared with love.'}
+                </p>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </section>
@@ -246,12 +302,26 @@ function ArtistsSection() {
 }
 
 export default function LandingPage() {
+  const [chefs, setChefs] = useState([]);
+
+  useEffect(() => {
+    const fetchChefs = async () => {
+      try {
+        const res = await chefsAPI.getAll();
+        setChefs(res.data);
+      } catch (err) {
+        console.error('Failed to fetch chefs for landing:', err);
+      }
+    };
+    fetchChefs();
+  }, []);
+
   return (
     <main className="bg-[#F9F8F6]">
-      <HeroSection />
+      <HeroSection featuredChef={chefs[0]} />
       <RolesSection />
       <RitualSection />
-      <ArtistsSection />
+      <ArtistsSection chefs={chefs} />
     </main>
   );
 }

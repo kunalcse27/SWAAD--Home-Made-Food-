@@ -1,10 +1,18 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Search, SlidersHorizontal, MapPin, X } from 'lucide-react';
 import TiffinCard, { TiffinCardSkeleton } from '../components/TiffinCard';
-import { filters } from '../utils/mockData';
 import useStore from '../hooks/useStore';
 import { chefsAPI } from '../services/api';
 import toast from 'react-hot-toast';
+
+const FILTERS = [
+  { id: 'all', label: 'All Tiffins' },
+  { id: 'veg', label: 'Pure Veg' },
+  { id: 'non-veg', label: 'Non-Veg' },
+  { id: 'heavy', label: 'Heavy Meals' },
+  { id: 'light', label: 'Light/Sattvic' },
+  { id: 'budget', label: 'Budget Pick' },
+];
 
 export default function CustomerHome() {
   const { location, activeFilter, searchQuery, setFilter, setSearchQuery } = useStore();
@@ -25,12 +33,19 @@ export default function CustomerHome() {
         setLoading(false);
       }
     };
+
+    // Real-time refresh listener
+    const handleRefresh = () => fetchChefs();
+    window.addEventListener('REFRESH_CHEFS_LIST', handleRefresh);
     
     // We debounce slightly to avoid blasting the API while sorting/typing
     const timeout = setTimeout(() => {
       fetchChefs();
     }, 300);
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+      window.removeEventListener('REFRESH_CHEFS_LIST', handleRefresh);
+    };
   }, [activeFilter, searchQuery]);
 
   const filtered = chefsList;
@@ -68,9 +83,8 @@ export default function CustomerHome() {
             </button>
           </div>
 
-          {/* Filter chips */}
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5">
-            {filters.map(f => (
+            {FILTERS.map(f => (
               <button key={f.id} onClick={() => setFilter(f.id)}
                 className={`chip ${activeFilter === f.id ? 'chip-active' : ''}`}>
                 {f.label}

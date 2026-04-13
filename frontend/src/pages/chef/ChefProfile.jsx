@@ -1,8 +1,26 @@
+import { useState, useEffect } from 'react';
 import { Share, CalendarDays, Award, Star, CheckCircle2, ChevronRight } from 'lucide-react';
 import useStore from '../../hooks/useStore';
+import { chefDashboardAPI } from '../../services/api';
 
 export default function ChefProfile() {
   const { user } = useStore();
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await chefDashboardAPI.getStats();
+        setStats(res.data);
+      } catch (err) {
+        console.error("Failed to load chef stats", err);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const rating = stats?.rating || 4.9;
+  const tablesHosted = stats?.totalSubscribers ? stats.totalSubscribers * 4 + stats.pendingOrders : 850;
 
   return (
     <div className="max-w-6xl mx-auto pb-12 font-sans overflow-hidden">
@@ -37,8 +55,8 @@ export default function ChefProfile() {
                        {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-[#EACC4E] text-[#EACC4E]" />)}
                      </div>
                   </div>
-                  <h1 className="text-5xl font-black text-ink tracking-tight mb-2">Chef {user?.name || 'Kabir Singh'}</h1>
-                  <p className="text-ink-secondary text-sm max-w-sm leading-relaxed">Specializing in Progressive Mughlai, & Punjabi Heritage</p>
+                  <h1 className="text-5xl font-black text-ink tracking-tight mb-2">{user?.name || 'Chef Partner'}</h1>
+                  <p className="text-ink-secondary text-sm max-w-sm leading-relaxed">Dedicated Culinary Artist & Food Enthusiast</p>
                </div>
             </div>
 
@@ -72,11 +90,11 @@ export default function ChefProfile() {
                      <p className="text-[9px] font-bold text-ink-secondary uppercase tracking-widest">Years Experience</p>
                    </div>
                    <div className="bg-[#EBE9E1] rounded-2xl p-6 text-center">
-                     <h2 className="text-3xl font-black text-ink mb-1">4.9</h2>
+                     <h2 className="text-3xl font-black text-ink mb-1">{rating}</h2>
                      <p className="text-[9px] font-bold text-ink-secondary uppercase tracking-widest">User Rating</p>
                    </div>
                    <div className="bg-[#EBE9E1] rounded-2xl p-6 text-center">
-                     <h2 className="text-3xl font-black text-ink mb-1">850+</h2>
+                     <h2 className="text-3xl font-black text-ink mb-1">{tablesHosted}+</h2>
                      <p className="text-[9px] font-bold text-ink-secondary uppercase tracking-widest">Tables Hosted</p>
                    </div>
                 </div>

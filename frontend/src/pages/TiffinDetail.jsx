@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, CheckCircle, Heart, Share2, Truck, Store } from 'lucide-react';
 import { RatingBadge } from '../components/RatingStars';
-import MenuTable from '../components/MenuTable';
+import ChefAestheticMenu from '../components/ChefAestheticMenu';
 import SubscriptionSelector from '../components/SubscriptionSelector';
 import useStore from '../hooks/useStore';
 import { chefsAPI } from '../services/api';
@@ -121,10 +121,10 @@ export default function TiffinDetail() {
               </p>
             </div>
 
-            {/* Weekly Menu */}
+            {/* Signature Menu */}
             <div>
-              <h2 className="text-xl font-bold text-ink mb-4">📅 Weekly Menu</h2>
-              <MenuTable menu={menu} />
+              <h2 className="text-xl font-bold text-ink mb-4">✨ Signature Experience</h2>
+              <ChefAestheticMenu menu={menu} />
             </div>
 
             {/* Subscription Plans */}

@@ -1,6 +1,4 @@
-const Chef = require('../models/Chef');
-const Menu = require('../models/Menu');
-const Review = require('../models/Review');
+const { firestore } = require('../config/firebase');
 
 // @desc    Get all chefs
 // @route   GET /api/chefs
@@ -9,51 +7,82 @@ exports.getChefs = async (req, res) => {
   try {
     const { q, filter } = req.query;
     
-    let query = {};
+    let chefsRef = firestore.collection('chefs');
+    // Note: Complex queries in Firestore usually require composite indexes, 
+    // but we can fetch and filter locally if dataset is small, or use basic querying.
+    const snapshot = await chefsRef.get();
     
-    // Simplistic search
-    if (q) {
-      query.$or = [
-        { kitchenName: { $regex: q, $options: 'i' } },
-        { cuisines: { $in: [new RegExp(q, 'i')] } }
-      ];
-    }
-    
-    // Filters logic
-    if (filter) {
-       if (filter === 'veg') query.isVeg = true;
-       if (filter === 'jain') query.cuisines = { $in: ['Jain'] };
-       if (filter === 'south-indian') query.cuisines = { $in: [/South/i] };
-       if (filter === 'north-indian') query.cuisines = { $in: [/North/i] };
-       if (filter === 'gujarati') query.cuisines = { $in: ['Gujarati'] };
-       if (filter === 'under-2000') query['subscriptions.monthly'] = { $lt: 2000 };
-       if (filter === 'under-3000') query['subscriptions.monthly'] = { $lt: 3000 };
-       if (filter === 'top-rated') query.rating = { $gte: 4.8 };
+    if (snapshot.empty) {
+      return res.json([]);
     }
 
-    const chefs = await Chef.find(query).populate('userId', 'name avatar');
+    let chefsList = [];
     
-    // Format for frontend
-    const formattedChefs = chefs.map(c => ({
-      id: c._id,
-      name: c.userId ? c.userId.name : 'Unknown User',
-      kitchen: c.kitchenName,
-      avatar: c.avatar || (c.userId && c.userId.avatar) || "https://i.pravatar.cc/150",
-      rating: c.rating,
-      reviews: c.reviewsCount,
-      experience: c.experience || 'New',
-      location: c.location || 'Unknown',
-      distance: "2.5 km", // Hardcoded mock distance for now
-      cuisines: c.cuisines,
-      isVeg: c.isVeg,
-      image: c.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80",
-      price: c.subscriptions.monthly,
-      meals: "Lunch + Dinner",
-      specialty: c.specialty || "Homemade food",
-      verified: c.isVerified,
-      subscriptions: c.subscriptions,
-      badge: c.rating >= 4.8 ? "Top Rated" : ""
-    }));
+    // Fetch associated user data for names
+    // To avoid too many reads, we should ideally denormalize 'userName' onto the Chef document,
+    // but for now we fetch it if missing.
+    snapshot.forEach(doc => {
+      chefsList.push({ id: doc.id, ...doc.data() });
+    });
+
+    // Formatting & manual filtering (since Firestore query operators are limited for complex regex)
+    let formattedChefs = [];
+    
+    for (let c of chefsList) {
+       // Local filtering logic to mimic previous backend regex search
+       if (q) {
+         const search = q.toLowerCase();
+         const kitchenName = (c.kitchenName || '').toLowerCase();
+         const hasCuisine = (c.cuisines || []).some(cuisine => cuisine.toLowerCase().includes(search));
+         if (!kitchenName.includes(search) && !hasCuisine) {
+             continue; // Skip this chef
+         }
+       }
+
+       if (filter) {
+         if (filter === 'veg' && c.isVeg !== true) continue;
+         if (filter === 'jain' && !(c.cuisines || []).includes('Jain')) continue;
+         if (filter === 'south-indian' && !(c.cuisines || []).join(' ').toLowerCase().includes('south')) continue;
+         if (filter === 'north-indian' && !(c.cuisines || []).join(' ').toLowerCase().includes('north')) continue;
+         if (filter === 'gujarati' && !(c.cuisines || []).includes('Gujarati')) continue;
+         if (filter === 'under-2000' && (c.subscriptions?.monthly || 9999) >= 2000) continue;
+         if (filter === 'under-3000' && (c.subscriptions?.monthly || 9999) >= 3000) continue;
+         if (filter === 'top-rated' && (c.rating || 0) < 4.8) continue;
+       }
+
+       let userName = c.name || c.userName || 'Unknown User';
+       let userAvatar = null;
+       
+       // If no denormalized name, fetch from users collection
+       if (!c.name && !c.userName && c.userId) {
+          const userDoc = await firestore.collection('users').doc(c.userId).get();
+          if (userDoc.exists) {
+              userName = userDoc.data().name;
+              userAvatar = userDoc.data().avatar;
+          }
+       }
+
+       formattedChefs.push({
+          id: c.userId || c.id,
+          name: userName,
+          kitchen: c.kitchenName,
+          avatar: c.avatar || userAvatar || "https://i.pravatar.cc/150",
+          rating: c.rating || 4.5,
+          reviews: c.reviewsCount || 0,
+          experience: c.experience || 'New',
+          location: c.location || 'Unknown',
+          distance: c.distance || "2.5 km",
+          cuisines: c.cuisines || c.specialties || [],
+          isVeg: c.isVeg || false,
+          image: c.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80",
+          price: c.menu?.price || c.subscriptions?.monthly || 2500,
+          meals: c.meals || "Lunch + Dinner",
+          specialty: c.specialty || "Homemade food",
+          verified: c.isVerified || false,
+          subscriptions: c.subscriptions || { daily: 100, weekly: 700, monthly: 2500 },
+          badge: (c.rating && c.rating >= 4.8) ? "Top Rated" : ""
+       });
+    }
 
     res.json(formattedChefs);
   } catch (error) {
@@ -66,29 +95,43 @@ exports.getChefs = async (req, res) => {
 // @access  Public
 exports.getChefById = async (req, res) => {
   try {
-    const chef = await Chef.findById(req.params.id).populate('userId', 'name avatar');
+    const chefId = req.params.id;
+    const chefDoc = await firestore.collection('chefs').doc(chefId).get();
     
-    if (!chef) return res.status(404).json({ message: 'Chef not found' });
+    if (!chefDoc.exists) return res.status(404).json({ message: 'Chef not found' });
+    
+    const chef = chefDoc.data();
+    
+    let userName = chef.name || chef.userName || 'Unknown User';
+    let userAvatar = null;
+    
+    if (!chef.name && !chef.userName && chef.userId) {
+       const userDoc = await firestore.collection('users').doc(chef.userId).get();
+       if (userDoc.exists) {
+           userName = userDoc.data().name;
+           userAvatar = userDoc.data().avatar;
+       }
+    }
     
     const formattedChef = {
-      id: chef._id,
-      name: chef.userId ? chef.userId.name : 'Unknown',
+      id: chef.userId || chefDoc.id,
+      name: userName,
       kitchen: chef.kitchenName,
-      avatar: chef.avatar || (chef.userId && chef.userId.avatar) || "https://i.pravatar.cc/150",
-      rating: chef.rating,
-      reviews: chef.reviewsCount,
+      avatar: chef.avatar || userAvatar || "https://i.pravatar.cc/150",
+      rating: chef.rating || 4.5,
+      reviews: chef.reviewsCount || 0,
       experience: chef.experience || 'New',
       location: chef.location || 'Unknown',
-      distance: "2.5 km",
-      cuisines: chef.cuisines,
-      isVeg: chef.isVeg,
+      distance: chef.distance || "2.5 km",
+      cuisines: chef.cuisines || chef.specialties || [],
+      isVeg: chef.isVeg || false,
       image: chef.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80",
-      price: chef.subscriptions.monthly,
-      meals: "Lunch + Dinner",
+      price: chef.menu?.price || chef.subscriptions?.monthly || 2500,
+      meals: chef.meals || "Lunch + Dinner",
       specialty: chef.specialty || "Homemade food",
-      verified: chef.isVerified,
-      subscriptions: chef.subscriptions,
-      badge: ""
+      verified: chef.isVerified || false,
+      subscriptions: chef.subscriptions || { daily: 100, weekly: 700, monthly: 2500 },
+      badge: (chef.rating && chef.rating >= 4.8) ? "Top Rated" : ""
     };
     
     res.json(formattedChef);
@@ -102,23 +145,13 @@ exports.getChefById = async (req, res) => {
 // @access  Public
 exports.getChefMenu = async (req, res) => {
   try {
-    const menu = await Menu.findOne({ chefId: req.params.id, status: 'Published' }).sort('-createdAt');
-    if (!menu) {
-      return res.json({}); // Return empty if no published menu
-    }
+    const chefId = req.params.id;
+    const chefDoc = await firestore.collection('chefs').doc(chefId).get();
     
-    // Format to match frontend structure: { Monday: { lunch: [], dinner: [] }, ... }
-    const formattedMenu = {};
-    menu.days.forEach(d => {
-       formattedMenu[d.day] = {
-         lunch: d.lunch || [],
-         dinner: d.dinner || [],
-         isRest: d.isRest,
-         isSpecial: d.isSpecial
-       };
-    });
+    if (!chefDoc.exists) return res.json({});
     
-    res.json(formattedMenu);
+    const menu = chefDoc.data().menu || {};
+    res.json(menu);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -129,16 +162,38 @@ exports.getChefMenu = async (req, res) => {
 // @access  Public
 exports.getChefReviews = async (req, res) => {
   try {
-    const reviews = await Review.find({ chefId: req.params.id }).populate('customerId', 'name avatar').sort('-createdAt');
+    const chefId = req.params.id;
+    const reviewsRef = firestore.collection('reviews');
+    const snapshot = await reviewsRef.where('chefId', '==', chefId).orderBy('createdAt', 'desc').get();
     
-    const formattedReviews = reviews.map(r => ({
-      id: r._id,
-      name: r.customerId ? r.customerId.name : 'Unknown User',
-      avatar: (r.customerId && r.customerId.avatar) || "https://i.pravatar.cc/150",
-      rating: r.rating,
-      date: r.createdAt.toLocaleDateString(),
-      text: r.text
-    }));
+    if (snapshot.empty) {
+      return res.json([]);
+    }
+    
+    let formattedReviews = [];
+    
+    for (let doc of snapshot.docs) {
+       const r = doc.data();
+       let customerName = 'Unknown User';
+       let customerAvatar = null;
+       
+       if (r.customerId) {
+          const userDoc = await firestore.collection('users').doc(r.customerId).get();
+          if (userDoc.exists) {
+              customerName = userDoc.data().name;
+              customerAvatar = userDoc.data().avatar;
+          }
+       }
+       
+       formattedReviews.push({
+          id: doc.id,
+          name: customerName,
+          avatar: customerAvatar || "https://i.pravatar.cc/150",
+          rating: r.rating,
+          date: r.createdAt ? new Date(r.createdAt).toLocaleDateString() : new Date().toLocaleDateString(),
+          text: r.text
+       });
+    }
     
     res.json(formattedReviews);
   } catch (error) {

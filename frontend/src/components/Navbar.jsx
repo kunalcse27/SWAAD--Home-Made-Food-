@@ -6,7 +6,7 @@ import useStore from '../hooks/useStore';
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { isAuthenticated, logout } = useStore();
+  const { isAuthenticated, user, logout } = useStore();
   const navigate = useNavigate();
   const loc = useLocation();
 
@@ -18,7 +18,7 @@ export default function Navbar() {
 
   const navlinks = [
     { label: 'Explore', to: '/home' },
-    { label: 'How It Works', to: '/#how-it-works' },
+    { label: 'How It Works', to: '/how-it-works' },
     { label: 'Our Chefs', to: '/home' },
   ];
 
@@ -46,6 +46,12 @@ export default function Navbar() {
 
         {/* Right side */}
         <div className="flex items-center gap-5">
+          {isAuthenticated && user?.role === 'customer' && (
+            <Link to="/customer/dashboard" className="text-[13px] uppercase tracking-wider font-medium text-[#2D2D2D] hover:text-[#AD4924] hidden md:block">
+              Dashboard
+            </Link>
+          )}
+
           <button className="p-1 hover:text-[#AD4924] transition-colors text-[#2D2D2D]">
             <ShoppingCart size={18} strokeWidth={2} />
           </button>

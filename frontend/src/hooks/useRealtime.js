@@ -1,36 +1,36 @@
-import { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
+import { useEffect } from 'react';
+import socket, { connectSocket, disconnectSocket } from '../services/socket';
 import useStore from './useStore';
 import toast from 'react-hot-toast';
 
-export default function useRealtime() {
-  const { user } = useStore();
-  const [socket, setSocket] = useState(null);
+export const useRealtime = () => {
+  const { user, isAuthenticated } = useStore();
 
   useEffect(() => {
-    if (!user?._id) return;
+    if (isAuthenticated && user) {
+      connectSocket(user._id);
 
-    const wsUrl = import.meta.env.VITE_WS_URL || 'http://localhost:5000';
-    const newSocket = io(wsUrl);
-
-    newSocket.on('connect', () => {
-      console.log('Socket initialized');
-      newSocket.emit('join_room', user._id);
-    });
-
-    // Listen for order status changes (for customer)
-    newSocket.on('order:status_changed', (data) => {
-      toast.success(`Your order status is now: ${data.status}`, {
-         icon: '🚚',
-         duration: 5000
+      socket.on('menu_updated', (data) => {
+        toast.success(`Chef updated their menu!`, {
+          icon: '🍳',
+          duration: 4000,
+        });
+        // We can emit a local event or use a callback to refresh data
+        window.dispatchEvent(new CustomEvent('REFRESH_CHEFS_LIST'));
       });
-      // Further logic can be placed here to trigger refetches if necessary
-    });
 
-    setSocket(newSocket);
+      socket.on('order_status_updated', (data) => {
+        toast.success(`Your order status is now: ${data.status}`, {
+          icon: '🚚',
+        });
+        window.dispatchEvent(new CustomEvent('REFRESH_ORDERS_LIST'));
+      });
 
-    return () => newSocket.disconnect();
-  }, [user]);
-
-  return socket;
-}
+      return () => {
+        socket.off('menu_updated');
+        socket.off('order_status_updated');
+        disconnectSocket();
+      };
+    }
+  }, [isAuthenticated, user]);
+};
