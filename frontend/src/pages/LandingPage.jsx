@@ -66,24 +66,36 @@ function HeroSection({ featuredChef }) {
         </div>
 
 
-        {/* Right Image/Video Composition */}
+        {/* Right Image Composition */}
         <div className="relative h-[400px] md:h-[600px] flex items-center justify-center">
-          <div className="absolute inset-0 bg-gradient-to-tr from-[#EDEDE4] to-[#F5F2ED] rounded-[3rem] shadow-xl transform rotate-3" />
+          {/* Decorative rotated backing card */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-[#C87E4B]/30 to-[#FFD166]/20 rounded-[3rem] shadow-xl transform rotate-3" />
+          {/* Secondary accent card */}
+          <div className="absolute inset-2 bg-gradient-to-bl from-[#AD4924]/10 to-[#EFECE6]/60 rounded-[3rem] shadow-lg transform -rotate-1" />
           
-          <div className="relative z-10 w-full h-full rounded-[3rem] shadow-2xl overflow-hidden group">
-            {/* Ultra HD Cinematic Cooking Video Loop (Open CDN) */}
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-full h-full object-cover transform scale-105 group-hover:scale-110 transition-transform duration-[2s] ease-out mix-blend-multiply"
-            >
-              <source src="https://upload.wikimedia.org/wikipedia/commons/7/74/Preparation_of_Dosa.webm" type="video/webm" />
-            </video>
+          <div className="relative z-10 w-full h-full rounded-[3rem] shadow-2xl overflow-hidden group cursor-pointer">
+            {/* Chef Hero Image */}
+            <img
+              src="/chef-hero.png"
+              alt="Happy home chef cooking with love"
+              className="w-full h-full object-cover object-center transform scale-105 group-hover:scale-110 transition-transform duration-[2s] ease-out"
+              onError={(e) => {
+                // fallback to an Unsplash image if local file fails
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=1200&q=90';
+              }}
+            />
             
-            {/* Elegant vignette overlay to pop text and add premium cinematic feel */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
+            {/* Warm cinematic vignette overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#3A1A08]/70 via-[#AD4924]/10 to-transparent pointer-events-none" />
+
+            {/* Top-right golden shimmer glow */}
+            <div className="absolute -top-8 -right-8 w-48 h-48 bg-[#FFD166]/40 rounded-full blur-3xl opacity-70 group-hover:opacity-90 transition-opacity duration-700 pointer-events-none" />
+
+            {/* Floating badge — top left */}
+            <div className="absolute top-5 left-5 z-20 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+              <span className="text-lg">👨‍🍳</span>
+              <span className="text-[#2D2D2D] text-xs font-bold tracking-wide">Home Chef Magic</span>
+            </div>
           </div>
           
           {/* Floating Chef Card */}
