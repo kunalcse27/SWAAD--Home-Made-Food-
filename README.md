@@ -221,20 +221,17 @@ npm run dev
 |------|------|--------|
 | Kunal Kumar | Team Leader & Full Stack Dev | [@kunalcse27](https://github.com/kunalcse27) |
 | Ajeet Mishra | Developer | [@AjeetMishra01](https://github.com/AjeetMishra01) |
-| Suraj Sah | Developer | — |
-| Sharvya Shetty | Developer | — |
+
 
 ---
 
 ## 📽️ Demo
 
-**[▶️ Watch the full walkthrough](https://drive.google.com/file/d/11tJNTv-28B13BMkjKvCL08JfGxycn_AR/view?usp=drive_link)**
+**[▶️ Watch the full walkthrough](https://docs.google.com/videos/d/1CfcZ2Bz6AX-6R2PqzHWfLO-xMNgwjWdmG5LuW-YO9MI/edit?scene=id.p#scene=id.p)**
 
 ---
 
 <div align="center">
-
-Built with chai ☕, code 💻, and a lot of hunger 🍛
 
 *T.E. Computer Engineering — Shree L.R. Tiwari College of Engineering, Mumbai (2025–26)*
 
