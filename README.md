@@ -11,7 +11,7 @@ Home-cooked food, delivered by neighbours who actually know how to cook.
 [![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
 
-**[📽️ Watch Full Demo](https://docs.google.com/videos/d/1CfcZ2Bz6AX-6R2PqzHWfLO-xMNgwjWdmG5LuW-YO9MI/edit?usp=sharing)**
+**[📽️ Watch Full Demo](https://docs.google.com/videos/d/1CfcZ2Bz6AX-6R2PqzHWfLO-xMNgwjWdmG5LuW-YO9MI/edit?scene=id.p#scene=id.p)**
 
 <br/>
 
