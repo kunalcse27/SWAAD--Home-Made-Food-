@@ -15,7 +15,7 @@ Home-cooked food, delivered by neighbours who actually know how to cook.
 
 <br/>
 
-![SWAAD Home Page](screenshots/home.jpeg)
+![SWAAD Home Page](home.jpeg)
 
 </div>
 
@@ -37,7 +37,7 @@ We also threw in an **AI chatbot** because, honestly, ordering food should be as
 
 ### Landing Page — First impressions matter
 
-![Home Page](screenshots/home.jpeg)
+![Home Page](home.jpeg)
 
 The hero copy says it all: *"Ghar jaisa khana, ab har jagah."* Clean, warm, and inviting — just like the food itself.
 
@@ -45,7 +45,7 @@ The hero copy says it all: *"Ghar jaisa khana, ab har jagah."* Clean, warm, and 
 
 ### Sign In — Three roles, one login page
 
-![Login Page](screenshots/login.jpeg)
+![Login Page](login.jpeg)
 
 Customers, Chefs, and Delivery Partners all log in from the same screen but land on completely different dashboards. Role-based routing handled seamlessly with Firebase Auth.
 
@@ -53,7 +53,7 @@ Customers, Chefs, and Delivery Partners all log in from the same screen but land
 
 ### Explore Page — Browse like you're walking through a food market
 
-![Explore Page](screenshots/explore.jpeg)
+![Explore Page](explore.jpeg)
 
 Filter by cuisine type — Pure Veg, Non-Veg, Heavy Meals, Light/Sattvic, or Budget Pick. Each card shows the chef's name, their kitchen, ratings, and price per meal. Clean. No clutter.
 
@@ -61,7 +61,7 @@ Filter by cuisine type — Pure Veg, Non-Veg, Heavy Meals, Light/Sattvic, or Bud
 
 ### Chef Dashboard — The command centre
 
-![Chef Dashboard](screenshots/chef-dashboard.jpeg)
+![Chef Dashboard](chef-dashboard.jpeg)
 
 Every chef gets their own kitchen dashboard. Live orders, subscriber count, ratings, monthly earnings — everything at a glance. The `CHEF-BGY6` invite code is how delivery partners link to a specific kitchen. Simple but clever.
 
@@ -69,7 +69,7 @@ Every chef gets their own kitchen dashboard. Live orders, subscriber count, rati
 
 ### Earnings Dashboard — Built for real chefs
 
-![Earnings Dashboard](screenshots/earnings.jpeg)
+![Earnings Dashboard](earnings.jpeg)
 
 Total earnings, active subscribers, next payout date — all live from the backend. This screen alone convinced our examiner that the platform has real-world potential.
 
@@ -77,7 +77,7 @@ Total earnings, active subscribers, next payout date — all live from the backe
 
 ### AI Chatbot — For every question a user shouldn't have to Google
 
-![AI Chatbot](screenshots/chatbot.jpeg)
+![AI Chatbot](chatbot.jpeg)
 
 The Partner Support chatbot handles delivery issues in plain language. "I am not able to connect my customer" → it responds with actionable steps and even mentions the SOS option. No FAQ pages needed.
 
@@ -85,7 +85,7 @@ The Partner Support chatbot handles delivery issues in plain language. "I am not
 
 ### Link with Kitchen — Delivery partner onboarding
 
-![Link with Kitchen](screenshots/link-kitchen.jpeg)
+![Link with Kitchen](link-kitchen.jpeg)
 
 Delivery partners enter a `CHEF-XXXX` invite code shared by the chef. One modal, zero friction. This keeps the chef-partner relationship direct and trust-based.
 
@@ -93,7 +93,7 @@ Delivery partners enter a `CHEF-XXXX` invite code shared by the chef. One modal,
 
 ### College Evaluation — Examiner Feedback Form
 
-![Examiner Feedback](screenshots/feedback.jpeg)
+![Examiner Feedback](feedback.jpeg)
 
 Evaluated at **Shree L.R. Tiwari College of Engineering** during our T.E. project presentation (A.Y. 2025–26).
 
@@ -136,7 +136,7 @@ SWAAD--Home-Made-Food/
 │   ├── postcss.config.js
 │   └── package.json
 │
-└── screenshots/              # README images (this folder)
+└──               # README images (this folder)
 ```
 
 ---
@@ -222,7 +222,6 @@ npm run dev
 | Kunal Kumar | Team Leader & Full Stack Dev | [@kunalcse27](https://github.com/kunalcse27) |
 | Ajeet Mishra | Developer | [@AjeetMishra01](https://github.com/AjeetMishra01) |
 
-
 ---
 
 ## 📽️ Demo
@@ -236,4 +235,3 @@ npm run dev
 *T.E. Computer Engineering — Shree L.R. Tiwari College of Engineering, Mumbai (2025–26)*
 
 </div>
-
